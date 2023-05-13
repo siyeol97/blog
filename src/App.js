@@ -4,9 +4,11 @@ import './App.css';
 
 function App() {
 
-  let [title, transTitle] = useState(['남자 코트 추천', '강남 우동맛집', '파이썬 독학']);
-  let [like, transLike] = useState(0);
+  let [title, setTitle] = useState(['남자 코트 추천', '강남 우동맛집', '파이썬 독학']);
+  let [like, setLike] = useState([0, 0, 0]);
   let [modal, setModal] = useState(false);
+  let [title_type, setTitle_modal] = useState(0);
+  let [inputval, setInputval] = useState('');
 
   return (
     <div className="App">
@@ -17,7 +19,7 @@ function App() {
       <button onClick={()=>{
         let copy = [...title];
         copy[0] = '여자코트 추천';
-        transTitle(copy);
+        setTitle(copy);
         } }>
           성별변경
       </button>
@@ -25,38 +27,65 @@ function App() {
       <button onClick={()=>{
         let copy = [...title];
         copy.sort();
-        transTitle(copy);
+        setTitle(copy);
       }}>
         가나다정렬
       </button>
 
-      <div className='list'>
-        <h4>{ title[0] } <span onClick={ ()=>{ transLike(like+1)} }>👍</span> { like }</h4> 
-        <p>5월 17일 발행</p>
-      </div>
-      <div className='list'>
-        <h4>{ title[1] }</h4>
-        <p>5월 17일 발행</p>
-      </div>
-      <div className='list'>
-        <h4 onClick={()=>{setModal(!modal)}}>{ title[2] }</h4>
-        <p>5월 17일 발행</p>
-      </div>
+      {
+        title.map(function(a, i){
+          return (<div className='list' key={i}>
+          <h4 onClick={()=>{setModal(true); setTitle_modal(i)}}>{ title[i] }
+            <span onClick={ (e)=>{ 
+              e.stopPropagation(); // 이벤트 버블링 막는법
+              let copy = [...like];
+              copy[i] += 1
+              setLike(copy)
+              } }>👍</span> { like[i] }
+            <button onClick={ (e)=>{
+              e.stopPropagation();
+              let copy = [...title];
+              let copy_like = [...like];
+              copy.splice(i, 1);
+              copy_like.splice(i, 1);
+              setTitle(copy);
+              setLike(copy_like);
+            }}>
+              글삭제
+            </button>
+          </h4>
+          <p>5월 17일 발행</p>
+        </div>)
+        })
+      }
 
-    {
-      modal == true ? <Modal/> : null
-    }
+      <input type="text" onChange={(e)=>{ setInputval(e.target.value); }}/>
+      <button onClick={()=>{
+        let copy = [...title];
+        let copy_like = [...like];
+        copy.unshift(inputval);
+        copy_like.unshift(0);
+        setTitle(copy);
+        setLike(copy_like);
+      }}>글추가</button>
 
+      {
+        modal === true
+        ? <Modal title_type={title_type} color={"grey"} title={title} setTitle={setTitle}/>
+        : null
+      }
+      
     </div>
   );
 };
 
-function Modal(){
+function Modal(props){
   return(
-    <div className='modal'>
-            <h4>제목</h4>
-            <p>날짜</p>
-            <p>상세내용</p>
+    <div className='modal' style={{background : props.color}}>
+      <h4>{props.title[props.title_type]}</h4>
+      <p>날짜</p>
+      <p>상세내용</p>
+      <button>글수정</button>
     </div>
   )
 }
